@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
 using k8s;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 
 namespace EndpointListTest.Controllers
 {
@@ -13,16 +10,6 @@ namespace EndpointListTest.Controllers
     [Route("[controller]")]
     public class EndpointsController : ControllerBase
     {
-        private readonly ILogger<EndpointsController> _logger;
-        private readonly Kubernetes _client;
-        private readonly Kubernetes _specifiedFileClient;
-        private readonly Kubernetes _inClusterClient;
-
-        public EndpointsController(ILogger<EndpointsController> logger)
-        {
-            _logger = logger;
-        }
-
         [HttpGet]
         public async Task<IEnumerable<string>> Get()
         {
@@ -34,7 +21,7 @@ namespace EndpointListTest.Controllers
             var jsonList = new List<string>();
             foreach (var pod in pods.Items)
             {
-                jsonList.Add(JsonSerializer.Serialize(pod.Status.HostIP));
+                jsonList.Add(JsonSerializer.Serialize(pod.Status.PodIP));
             }
 
             return jsonList;
