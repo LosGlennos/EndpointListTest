@@ -27,13 +27,11 @@ namespace EndpointListTest.Controllers
         public async Task<IEnumerable<string>> Get()
         {
 
-            var config = KubernetesClientConfiguration.BuildConfigFromConfigFile();
-            var specifiedFileConfig = KubernetesClientConfiguration.BuildConfigFromConfigFile(Environment.GetEnvironmentVariable("KUBECONFIG"));
-            var inClusterConfig = KubernetesClientConfiguration.InClusterConfig();
 
             Kubernetes client = null;
             try
             {
+                var config = KubernetesClientConfiguration.BuildConfigFromConfigFile();
                 client = new Kubernetes(config);
             }
             catch (Exception e)
@@ -43,6 +41,7 @@ namespace EndpointListTest.Controllers
 
             try
             {
+                var specifiedFileConfig = KubernetesClientConfiguration.BuildConfigFromConfigFile(Environment.GetEnvironmentVariable("KUBECONFIG"));
                 if (client == null)  client = new Kubernetes(specifiedFileConfig);
             }
             catch (Exception e)
@@ -52,6 +51,7 @@ namespace EndpointListTest.Controllers
 
             try
             {
+                var inClusterConfig = KubernetesClientConfiguration.InClusterConfig();
                 if (client == null) client = new Kubernetes(inClusterConfig);
             }
             catch (Exception e)
