@@ -12,6 +12,7 @@ spec:
       labels:
         app: endpointlisttest
     spec:
+      serviceAccountName: podlister-serviceaccount
       containers:
       - name: endpointlisttest
         image: martinfylke/endpointlisttest:latest
@@ -51,3 +52,32 @@ spec:
             backend:
               serviceName: endpointlisttest
               servicePort: 80
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: podlister-serviceaccount
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: podreader-role
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - list
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: podreader-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: podreader-role
+subjects:
+- kind: ServiceAccount
+  name: podlister-serviceaccount
