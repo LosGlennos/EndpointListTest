@@ -32,9 +32,9 @@ namespace EndpointListTest.Controllers
                 pod.Metadata.Labels.TryGetValue("app", out var deploymentName);
                 if (deploymentName != null && deploymentName == "gpe-price")
                 {
-                    var result = await httpClient.GetAsync($"http://{pod.Status.PodIP}/health");
-                    var responseMessage = await result.Content.ReadAsStringAsync();
-                    resultList.Add($"Pod {pod.Metadata.Name} response: {responseMessage}");
+                    var result = await httpClient.GetAsync($"http://{pod.Status.PodIP}:8080/health");
+                    var responseString = await result.Content.ReadAsStringAsync();
+                    resultList.Add($"Pod {pod.Metadata.Name} response: {responseString}");
                 }
             }
 
