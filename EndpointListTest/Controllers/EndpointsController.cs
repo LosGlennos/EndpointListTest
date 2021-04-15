@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using k8s;
@@ -10,6 +11,12 @@ namespace EndpointListTest.Controllers
     [Route("[controller]")]
     public class EndpointsController : ControllerBase
     {
+        private readonly IHttpClientFactory _clientFactory;
+
+        public EndpointsController(IHttpClientFactory clientFactory)
+        {
+            _clientFactory = clientFactory;
+        }
         [HttpGet]
         public async Task<IEnumerable<string>> Get()
         {
@@ -17,14 +24,23 @@ namespace EndpointListTest.Controllers
             var client = new Kubernetes(inClusterConfig);
 
             var pods = await client.ListNamespacedPodAsync("gpe");
+            var httpClient = _clientFactory.CreateClient();
 
-            var jsonList = new List<string>();
+            var resultList = new List<string>();
             foreach (var pod in pods.Items)
             {
-                jsonList.Add(JsonSerializer.Serialize(pod.Status.PodIP));
+                pod.Metadata.Labels.TryGetValue("app", out var deploymentName);
+                if (deploymentName != null && deploymentName == "gpe-price")
+                {
+                    var result = await httpClient.GetAsync($"http://{pod.Status.PodIP}/health");
+                    var responseMessage = await result.Content.ReadAsStringAsync();
+                    resultList.Add($"Pod {pod.Metadata.Name} response: {responseMessage}");
+                }
             }
 
-            return jsonList;
+
+
+            return resultList;
         }
     }
 }
