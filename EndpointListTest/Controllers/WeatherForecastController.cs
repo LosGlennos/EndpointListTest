@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
+using k8s;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -9,31 +11,30 @@ namespace EndpointListTest.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class WeatherForecastController : ControllerBase
+    public class EndpointsController : ControllerBase
     {
-        private static readonly string[] Summaries = new[]
-        {
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-        };
+        private readonly ILogger<EndpointsController> _logger;
+        private readonly Kubernetes _client;
 
-        private readonly ILogger<WeatherForecastController> _logger;
-
-        public WeatherForecastController(ILogger<WeatherForecastController> logger)
+        public EndpointsController(ILogger<EndpointsController> logger)
         {
             _logger = logger;
+            var config = KubernetesClientConfiguration.BuildConfigFromConfigFile();
+            _client = new Kubernetes(config);
         }
 
         [HttpGet]
-        public IEnumerable<WeatherForecast> Get()
+        public async Task<IEnumerable<string>> Get()
         {
-            var rng = new Random();
-            return Enumerable.Range(1, 5).Select(index => new WeatherForecast
+            var pods = await _client.ListNamespacedPodAsync("gpe");
+
+            var jsonList = new List<string>();
+            foreach (var pod in pods.Items)
             {
-                Date = DateTime.Now.AddDays(index),
-                TemperatureC = rng.Next(-20, 55),
-                Summary = Summaries[rng.Next(Summaries.Length)]
-            })
-            .ToArray();
+                jsonList.Add(JsonSerializer.Serialize(pod));
+            }
+
+            return jsonList;
         }
     }
 }
