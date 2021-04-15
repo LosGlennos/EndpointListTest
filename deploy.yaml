@@ -30,3 +30,24 @@ spec:
   selector:
     app: endpointlisttest
   type: LoadBalancer
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: endpointlisttest-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "180"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "180"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "180"
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+spec:
+  rules:
+    - host: gpe-dev.volvocars.biz
+      http:
+        paths:
+          - path: /listtest(/|$)(.*)
+            backend:
+              serviceName: endpointlisttest
+              servicePort: 80
