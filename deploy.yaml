@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: EndpointListTest
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: EndpointListTest
+  template:
+    metadata:
+      labels:
+        app: EndpointListTest
+    spec:
+      containers:
+      - name: EndpointListTest
+        image: martinfylke/EndpointListTest:1.0.1
+        ports:
+          - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: areyouok
+spec:
+  ports:
+  - port: 30010
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: areyouok
+  type: LoadBalancer
